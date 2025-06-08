@@ -163,5 +163,5 @@ END
 
 writeerror:
   print "Fehler beim Speichern, das tut uns leid. :( Bitte sag Nikolai Bescheid!"
-  INPUT "", unused
+  LINE INPUT "", unused$
   RESUME
