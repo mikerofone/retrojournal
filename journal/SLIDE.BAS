@@ -108,6 +108,17 @@ REM tips = FALSE
 DIM prompt
 prompt = TRUE
 
+' Read cmdline flags
+DIM spacepos
+spacepos = INSTR(COMMAND$, " ")
+DIM firstarg$
+IF spacepos > 0 THEN
+  firstarg$ = LEFT$(COMMAND$, spacepos - 1)
+ELSE
+  firstarg$ = COMMAND$
+END IF
+DIM debugmode
+debugmode = firstarg$ = "DEBUG"
 DO
   key$ = ""
   currentfile = iteration MOD numfiles
@@ -156,8 +167,8 @@ REM    iteration = 0
 REM  END IF
 REM  call getkey
   call maybetakemessage
-LOOP
-REM LOOP UNTIL key$ = "q"
+REM LOOP
+LOOP UNTIL debugmode = TRUE AND key$ = "q"
 END
 
 
