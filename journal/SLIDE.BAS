@@ -9,7 +9,7 @@ DIM SHARED msgindex$
 SCREEN 2
 
 SUB sleep STATIC
-  sleepcounter = 0
+    sleepcounter = 0
   FOR sleepcounter = 1 to 5000
     call getkey
     IF key$ <> "" THEN
@@ -39,19 +39,32 @@ END SUB
 SUB discardinputbuffer STATIC
   ' Clear all remaining keys.
   WHILE INKEY$ <> ""
+    IF debugmode = TRUE THEN print "bufclear",
   WEND
 END SUB
 
 SUB getkey STATIC
   IF key$ = "" THEN
     key$ = INKEY$
+    IF key$ <> "" THEN
+      IF debugmode THEN
+        LOCATE 1,1
+        print "KEY '" key$ "' KEY"
+      END IF
+      ' Some special keys generate a two byte sequence starting with 00h.
+      ' Discard those entirely.
+      WHILE LEFT$(key$, 1) = chr$(0)
+        IF debugmode THEN print "XXX '" key$ "' XXX"
+        key$ = INKEY$ ' read next keypress
+      WEND
+    END IF
   END IF
   call discardinputbuffer
 END SUB
   
 
 SUB maybetakemessage STATIC
-  call getkey
+  CALL getkey
   IF key$ = " " OR key$ = chr$(10) OR key$ = chr$(13) THEN
     key$ = ""
     call takemessage
@@ -128,7 +141,6 @@ DO
     PRINT "Bitte druecke RETURN oder LEERTASTE und hinterlasse uns einen Gruss! :-)";
   END IF
   call sleep
-  call getkey
 REM  IF key$ = "f" THEN
 REM    call flash(files$(currentfile))
 REM    key$ = ""
