@@ -1,6 +1,9 @@
 ' $DYNAMIC
 CONST FALSE = 0
 CONST TRUE = NOT FALSE
+CONST FIRSTINPUTROW = 7
+CONST INPUTROWS = 17
+CONST INPUTXOFFSET = 7
 
 DIM SHARED graphics(16000)
 DIM SHARED key$
@@ -9,7 +12,7 @@ DIM SHARED msgindex$
 SCREEN 2
 
 SUB sleep STATIC
-    sleepcounter = 0
+  sleepcounter = 0
   FOR sleepcounter = 1 to 5000
     call getkey
     IF key$ <> "" THEN
@@ -73,44 +76,65 @@ END SUB
 
 SUB takemessage STATIC
   CLS
-  call loadimage("snesctrl.bin")
-  LOCATE 1, 1
-  PRINT "Schreib' uns ein paar Worte und drueck 2x auf RETURN."
-  PRINT "Vielen Dank! -- Das Epic Moment Team"
-  PRINT ""
+  call loadimage("compose.bin")
+  LOCATE 2, INPUTXOFFSET
+  PRINT "Du kannst jetzt eine Nachricht schreiben und/oder Deine"
+  LOCATE 3, INPUTXOFFSET
+  PRINT "E-Mail Adresse angeben um den Newsletter der Diskette zu"
+  LOCATE 4, INPUTXOFFSET
+  PRINT "abbonieren (kann ein paar Tage dauern)."
+  LOCATE 5, INPUTXOFFSET
+  PRINT "Wenn Du fertig bist, druecke 2x die ENTER Taste. Danke! :)"
+
   DIM line$, message$
-  DIM enters
+  DIM enters, inputrow
   enters = 1
+  inputrow = 0
   message$ = ""
   line$ = ""
   t$ = TIME$
   d$ = DATE$
+  DIM empty
+  empty = TRUE
   DO
+    LOCATE FIRSTINPUTROW + inputrow, INPUTXOFFSET
+    PRINT "                                                                    "
+    LOCATE FIRSTINPUTROW + inputrow, INPUTXOFFSET
     LINE INPUT "", line$
+    REM Constrain to rows between start and bottom -1
+    inputrow = (CSRLIN - FIRSTINPUTROW) mod INPUTROWS
     IF line$ = "" THEN
       enters = enters + 1
     ELSE
       enters = 1
+      empty = FALSE
     END IF
     message$ = message$ + line$ + chr$(13) + chr$(10)
   LOOP UNTIL enters >= 2
-  PRINT "Nachricht wird gespeichert, merci vielmal! :-)"
-  ON ERROR GOTO writeerror
-  hms$ = MID$(t$, 1, 2) + MID$(t$, 4, 2) + MID$(t$, 7, 2)
-  OPEN "A:\messages\" + hms$ + ".txt" FOR OUTPUT AS 1
-  PRINT #1, d$ + " " + t$ + chr$(13) + chr$(10) + message$
-  CLOSE 1
+  IF empty = FALSE THEN
+    inputrow = (CSRLIN - FIRSTINPUTROW) MOD INPUTROWS
+    LOCATE FIRSTINPUTROW + inputrow, INPUTXOFFSET
+    PRINT "                                                                    ";
+    inputrow = (CSRLIN - FIRSTINPUTROW + 1) MOD INPUTROWS
+    LOCATE FIRSTINPUTROW + inputrow, INPUTXOFFSET
+    PRINT "                                                                    ";
+    LOCATE FIRSTINPUTROW + inputrow, INPUTXOFFSET
+    PRINT "Nachricht wird gespeichert, merci vielmal! :-)";
+    ON ERROR GOTO writeerror
+    hms$ = MID$(t$, 1, 2) + MID$(t$, 4, 2) + MID$(t$, 7, 2)
+    OPEN "A:\messages\" + hms$ + ".txt" FOR OUTPUT AS 1
+    PRINT #1, d$ + " " + t$ + chr$(13) + chr$(10) + message$
+    CLOSE 1
+  END IF
   call discardinputbuffer
 END SUB
   
   
 
 DIM files$(10)
-files$(0) = "retro.bin"
-files$(1) = "pokegapi.bin"
-files$(2) = "invaders.bin"
-files$(3) = "pokeentr.bin"
-CONST numfiles = 4
+files$(0) = "title.bin"
+files$(1) = "pokepmpt.bin"
+CONST numfiles = 2
 
 DIM iteration
 iteration = 0
@@ -119,7 +143,7 @@ REM DIM tips
 REM tips = FALSE
 
 DIM prompt
-prompt = TRUE
+prompt = FALSE
 
 ' Read cmdline flags
 DIM spacepos
@@ -185,6 +209,6 @@ END
 
 
 writeerror:
-  print "Fehler beim Speichern, das tut uns leid. :( Bitte sag Nikolai Bescheid!"
+  print "Fehler beim Speichern. :( Bitte sag Nikolai Bescheid!"
   LINE INPUT "", unused$
   RESUME
